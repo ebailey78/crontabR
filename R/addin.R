@@ -1,6 +1,6 @@
 library(shiny)
 library(miniUI)
-library(shinydashboard)
+library(DT)
 
 panel <- function(..., title, style = "default") {
 
@@ -24,7 +24,7 @@ miniColumn <- function(width, ..., offset = 0) {
   div(class = colClass, ..., style = "padding: 0;")
 }
 
-crontabAddin <- function() {
+crontabRAddin <- function() {
 
   ui <- miniPage(
 #    miniTitleBar("crontabR Gadget", right = miniTitleBarButton("done", "Done", primary = TRUE)),
@@ -57,7 +57,8 @@ crontabAddin <- function() {
               tags$label(`for` = "environmentVariables", "Environment Variables"),
               tags$textarea(id = "environmentVariables", rows = "7", width = "100%", class = "form-control"),
               tags$small("Separate varibles with linebreaks, don't use quotes")
-            )
+            ),
+            checkboxInput("overwriteCronjob", "Overwrite Existing Cronjob?", value = FALSE)
           )
         ),
         column(width = 12,
@@ -70,14 +71,14 @@ crontabAddin <- function() {
           "Test Destroy"
         )
       ),
-      miniTabPanel("Modify", icon = icon("pencil"),
-        miniContentPanel(
-          "Test Modify"
-        )
-      ),
+      # miniTabPanel("Modify", icon = icon("pencil"),
+      #   miniContentPanel(
+      #     "Test Modify"
+      #   )
+      # ),
       miniTabPanel("Logs", icon = icon("table"),
         miniContentPanel(
-          "Test Logs"
+          DT::dataTableOutput("logs")
         )
       ),
       miniTabPanel("Options", icon = icon("wrench"),
@@ -92,15 +93,15 @@ crontabAddin <- function() {
 
     datetime <- reactive({
 
-      d <- as.POSIXct(input$startDate)
-      t <- as.POSIXct(input$startTime, format = "%I:%M %p")
+      d <- as.POSIXlt(input$startDate)
+      t <- as.POSIXlt(input$startTime, format = "%I:%M %p")
 
       dt <- list(
-        M = format(t, "%M"),
-        H = format(t, "%H"),
-        d = format(d, "%d"),
-        m = format(d, "%m"),
-        W = as.POSIXlt(d)$wday
+        M = as.integer(format(t, "%M")),
+        H = as.integer(format(t, "%H")),
+        d = as.integer(format(d, "%d")),
+        m = as.integer(format(d, "%m")),
+        W = as.integer(as.POSIXlt(d)$wday)
       )
 
     })
@@ -130,16 +131,58 @@ crontabAddin <- function() {
 
     })
 
+    envVar <- reactive({
+      vars <- strsplit(input$environmentVariables, "\n", fixed = TRUE)[[1]]
+      vars <- vars[grep("=", vars, fixed = TRUE)]
+      vars <- strsplit(vars, "=", fixed = TRUE)
+      n <- sapply(vars, function(x) trimws(x[[1]]))
+      vars <- sapply(vars, function(x) trimws(x[[2]]))
+      names(vars) <- n
+      vars
+    })
+
+    observeEvent(input$cronjobName, {
+      updateTextInput(session, "cronjobName", value = formatNames(input$cronjobName))
+    })
+
+    observeEvent(input$addCronjob, {
+
+      ok <- TRUE
+      if(!is.null(input$scriptUpload)) {
+        if(tools::file_ext(input$scriptUpload$name[1]) != "R") {
+          ok <- FALSE
+        }
+      } else {
+        ok <- FALSE
+      }
+
+      if(is.null(input$cronjobName) | input$cronjobName == "") {
+        ok <- FALSE
+      }
+
+      if(is.na(as.POSIXct(input$startTime, format = "%I:%M %p"))) {
+        ok <- FALSE
+      }
+
+      if(ok) {
+        addCronjob(input$cronjobName, envVar(), cronString(), input$scriptUpload$datapath, overwrite = input$overwriteCronjob, warn=TRUE)
+      }
+
+
+    })
+
+    output$logs <- DT::renderDataTable({getLog()}, server = FALSE)
+
     observeEvent(input$done, {
       stopApp()
     })
 
   }
 
-  viewer <- dialogViewer("crontabR", width = 800, height = 525)
+  viewer <- dialogViewer("crontabR", width = 800, height = 600)
 
   runGadget(ui, server, viewer = viewer)
 
 }
 
-crontabAddin()
+#crontabAddin()

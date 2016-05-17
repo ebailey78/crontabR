@@ -1,0 +1,4 @@
+Name: CronTab Scheduler
+Description: Addin for using crontabR
+Binding: crontabRAddin
+Interactive: true
