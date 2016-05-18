@@ -24,7 +24,7 @@
 #'the \code{.automateR} directory in your home directory. It is this copy of the script that will be run by \code{automateR}.
 #'
 #'@export
-addCronjob <- function(name, env_vars, scheduled_time, script_path,
+addCronjob <- function(name, desc = NULL, env_vars, scheduled_time, script_path,
                        overwrite = FALSE, verbose = FALSE, warn = FALSE) {
 
   name <- formatNames(name, verbose)
@@ -44,7 +44,7 @@ addCronjob <- function(name, env_vars, scheduled_time, script_path,
 
     if(processScript(name, script_path, overwrite, warn = warn)) {
 
-      cronjob <- writeCronjob(name, env_vars, scheduled_time)
+      cronjob <- writeCronjob(name, desc, env_vars, scheduled_time)
       crontab <- readCrontab()
       crontab <- c(crontab, cronjob)
       writeCrontab(crontab)

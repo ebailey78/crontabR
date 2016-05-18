@@ -1,10 +1,14 @@
-writeCronjob <- function(name, env.vars, scheduled_time) {
+writeCronjob <- function(name, desc = NULL, env.vars, scheduled_time) {
 
   name <- formatNames(name)
 
   tag <- makeTag(name)
 
   cronjob <- c(tag)
+
+  if(!is.null(desc)) {
+    cronjob <- c(cronjob, paste0("#|#", desc))
+  }
 
   if(!missing(env.vars)) {
     if(length(env.vars) > 0) {

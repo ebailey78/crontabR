@@ -1,9 +1,11 @@
 script_directory <- "~/.crontabR/"
 log_file <- paste0(script_directory, "logs/log")
+jobregex <- "##### crontabR: (.*) #####"
+dateTimeFormat <- "%Y-%m-%d %I:%M%p"
 
 makeTag <- function(name) {
 
-  paste0("##### automateR: ", name, " #####")
+  paste0("##### crontabR: ", name, " #####")
 
 }
 

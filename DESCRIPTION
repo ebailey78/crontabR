@@ -1,9 +1,16 @@
 Package: crontabR
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Easy Script Scheduling in R for Linux
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: Eric Bailey
+Maintainer: Eric Bailey <eb11307@gmail.com>
+Description:
+  Provides an interface to your personal crontab in R. Set R scripts to run at
+  specific intervals. Use the RStudio addin for an easy graphical way to schedule
+  tasks in R under a Linux environment.
+License: GPL-3
 LazyData: TRUE
+Suggests:
+  shiny,
+  miniUI,
+  DT

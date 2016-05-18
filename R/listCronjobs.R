@@ -7,20 +7,29 @@ listCronjobs <- function() {
 
   crontab <- readCrontab()
 
-  x <- regexec("##### automateR: (.*) #####", crontab)
+  x <- unique(crontab[grep(jobregex, crontab)])
 
-  m <- regmatches(crontab, x)
+  y <- as.data.frame(do.call(rbind, lapply(x, function(i) {
 
-  m <- unlist(sapply(m, function(x) {
-    if(length(x) > 0) {
-      return(x[2])
-    } else {
-      return(NULL)
-    }
-  }))
+    y <- grep(i, crontab)
+    j <- crontab[y[1]:y[2]]
 
-  m <- unique(m)
+    name <- regmatches(j[1], regexec(jobregex, j[1]))[[1]][2]
+    desc <- paste(collapse = " ", gsub("^#\\|#", "", j[grep("^#\\|#", j)]))
+    cronString <- readCronString(strsplit(j[length(j) - 1], "Rscript")[[1]][1])
+    interval <- cronString$interval
+    nextRun <- format(cronString$nextRun, "%Y-%m-%d %I:%M%p")
 
-  return(m)
+    ev <- j[!grepl("^#", j)]
+    ev <- ev[-length(ev)]
+    ev <- paste(ev, collapse = "\n")
+
+    c(name, desc, interval, nextRun, ev)
+
+  })), stringsAsFactors = FALSE)
+
+  colnames(y) <- c("cronjob", "description", "interval", "nextRun", "envvar")
+
+  return(y)
 
 }
