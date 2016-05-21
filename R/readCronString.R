@@ -51,8 +51,6 @@ getNextRun <- function(cronList) {
   nr <- Sys.time()
   second(nr) <- 0
   now <- timeList(nr)
-  print(interval)
-  print(cronList)
   switch(interval,
     Hourly = {
       minute(nr) <- cronList$M

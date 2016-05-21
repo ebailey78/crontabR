@@ -10,7 +10,8 @@ Description:
   tasks in R under a Linux environment.
 License: GPL-3
 LazyData: TRUE
-Suggests:
+Depends:
   shiny,
   miniUI,
-  DT
+  DT,
+  lubridate

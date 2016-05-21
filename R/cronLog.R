@@ -4,7 +4,9 @@
 #'@param level The loglevel to log to
 #'
 #'@export
-autolog <- function(msg, app = Sys.getenv("AUTOMATER_APP"), level = "info") {
+cronLog <- function(msg, level = "info", app = getOption("crontabRjobValues")$name) {
+
+  if(is.null(app)) app = "crontabR"
 
   levels <- c(error = 0, warn = 1, info = 2, verbose = 3, debug = 4, silly = 5)
 
@@ -13,14 +15,13 @@ autolog <- function(msg, app = Sys.getenv("AUTOMATER_APP"), level = "info") {
     if(!dir.exists(dirname(log_file))) dir.create(dirname(log_file), recursive = TRUE)
 
     msg <- gsub("|", ".", msg, fixed = TRUE)
-    if(app == "") app = "Unknown"
     rec <- list(level, app, Sys.time(), msg)
 
     write.table(rec, log_file, append = TRUE, sep = "|", row.names = FALSE, col.names = FALSE)
 
   } else {
 
-    autolog(paste0("Unrecognized logging level: ", level), app, "error")
+    cronLog(paste0("Unrecognized logging level: ", level), "error", app)
     warning("Unrecognized logging level: ", level)
 
   }

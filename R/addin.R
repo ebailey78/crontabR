@@ -1,6 +1,8 @@
-library(shiny)
-library(miniUI)
-library(DT)
+status <- function(status, style = "info") {
+  as.character(tags$div(class = paste0("alert alert-", style), style = "margin-top: 10px;",
+          tags$strong("Status: "), status
+  ))
+}
 
 textAreaInput <- function (inputId, label, value = "", rows = 3, placeholder = NULL)
 {
@@ -32,10 +34,11 @@ miniColumn <- function(width, ..., offset = 0) {
   div(class = colClass, ..., style = "padding: 0;")
 }
 
+#'@export
 crontabRAddin <- function() {
 
   ui <- miniPage(
-    miniTabstripPanel(
+    miniTabstripPanel(id = "whichTab",
       tabPanel("Create", icon = icon("magic"),
         column(width = 7,
           panel(title = "Select Cronjob", style = "default",
@@ -45,19 +48,24 @@ crontabRAddin <- function() {
             textInput("cronjobName", label = "Cronjob Name", width = "100%"),
             textAreaInput("cronjobDesc", rows = "2", "Cronjob Description"),
             textAreaInput("environmentVariables", "Environment Variables"),
-            checkboxInput("overwriteCronjob", "Overwrite Existing Cronjob?", value = FALSE)
+            tags$div(class = "col-sm-6",
+              checkboxInput("overwriteCronjob", "Overwrite Cronjob", value = FALSE)
+            ),
+            tags$div(class = "col-sm-6",
+              checkboxInput("sourceBashrc", "Source .bashrc", value = TRUE)
+            )
           )
         ),
         column(width = 5,
                panel(title = "Scheduler", style = "default",
+                     miniColumn(width = 12,
+                                selectInput("frequency", label = NULL, choices = c("Hourly", "Daily", "Weekly", "Monthly", "Yearly"), selected = "Weekly")
+                     ),
                      miniColumn(width = 6,
                                 dateInput("startDate", "Date", min = Sys.Date(), value = Sys.Date())
                      ),
                      miniColumn(width = 6,
                                 textInput("startTime", "Time", value = format(Sys.time(), "%I:%M %p"), placeholder = "HH:MM _M")
-                     ),
-                     miniColumn(width = 12,
-                                selectInput("frequency", label = NULL, choices = c("Hourly", "Daily", "Weekly", "Monthly", "Yearly"), selected = "Weekly")
                      )#,
                      # tags$div(style = "text-align: center; width: 100%", "- OR -"),
                      # miniColumn(width = 12,
@@ -67,12 +75,24 @@ crontabRAddin <- function() {
                panel(title = "Script Selection", style = "default",
                      fileInput("scriptUpload", label = NULL)
                ),
-               tags$div(class = "btn-group",
-                  tags$button(id = "addCronjob", class = "btn btn-success action-button", icon("plus"), "Add"),
-                  tags$button(id = "updateCronjob", class = "btn btn-warning action-button", icon("pencil"), "Update"),
-                 tags$button(id = "deleteCronjob", class = "btn btn-danger action-button", icon("minus"), "Delete"),
+               tags$div(class = "btn-group btn-group-justified", role = "group",
+                tags$div(class = "btn-group",
+                  tags$button(id = "addCronjob", class = "btn btn-success action-button", icon("plus"), "Add")
+                ),
+                tags$div(class = "btn-group",
+                 tags$button(id = "updateCronjob", class = "btn btn-warning action-button", icon("pencil"), "Update")
+                )
+               ),
+               tags$div(class = "btn-group btn-group-justified", style = "margin-top: 5px;",
+                tags$div(class = "btn-group",
+                 tags$button(id = "deleteCronjob", class = "btn btn-danger action-button", icon("minus"), "Delete")
+                ),
+                tags$div(class = "btn-group",
                  tags$button(id = "clearAddForm", class = "btn btn-info action-button", icon("ban"), "Clear")
-               )
+                )
+               ),
+               htmlOutput("status")
+
 
 
         )
@@ -84,6 +104,15 @@ crontabRAddin <- function() {
       ),
       miniTabPanel("Logs", icon = icon("table"),
         miniContentPanel(
+          tags$div(class = "col-sm-4",
+            selectInput("logLevel", label = "Level", multiple = TRUE, choices = c())
+          ),
+          tags$div(class = "col-sm-4",
+            selectInput("logJob", label = "Job", choices = c())
+          ),
+          tags$div(class = "col-sm-4",
+            actionButton("updateLogs", "Update Logs")
+          ),
           DT::dataTableOutput("logs")
         )
       )#,
@@ -97,7 +126,9 @@ crontabRAddin <- function() {
 
   server <- function(input, output, session) {
 
-    values <- reactiveValues(cronjobs = listCronjobs())
+    values <- reactiveValues(cronjobs = listCronjobs(),
+                             status = status("Ready to Cron It Up!", "info"),
+                             logs = getLog())
 
 ####### REACTIVES ########
 
@@ -121,6 +152,25 @@ crontabRAddin <- function() {
       ccj <- input$currentJobs
       if(!ccj %in% values$cronjobs$cronjob) ccj <- NULL
       updateSelectInput(session, "currentJobs", choices = c("", values$cronjobs$cronjob), selected = ccj)
+    })
+
+    observeEvent(input$whichTab, {
+      print(input$whichTab)
+
+    })
+
+    observeEvent(input$frequency, {
+      now <- Sys.time()
+      freq <- input$frequency
+      then <- switch(freq,
+        Hourly = now,
+        Daily = now,
+        Weekly = now + weeks(1),
+        Monthly = now + months(1),
+        Yearly = now + years(1)
+      )
+      updateDateInput(session, "startDate", min = now, max = then)
+
     })
 
     # Creates the CronString for use with addCronjob
@@ -170,6 +220,8 @@ crontabRAddin <- function() {
       updateTextInput(session, "cronjobName", value = formatNames(input$cronjobName))
     })
 
+    observeEvent(input$updateLogs, {values$logs <- getLog()})
+
     # Populate cronjob info
     observeEvent(input$currentJobs, {
 
@@ -192,21 +244,30 @@ crontabRAddin <- function() {
       ok <- TRUE
       if(!is.null(input$scriptUpload)) {
         if(tools::file_ext(input$scriptUpload$name[1]) != "R") {
+          values$status <- status("The script file should have a .R extension.", "danger")
           ok <- FALSE
         }
       } else {
+        values$status <- status("You must include a script file.", "danger")
         ok <- FALSE
       }
 
       if(is.null(input$cronjobName) | input$cronjobName == "") {
+        values$status <- status("You must provide a name for this job.", "danger")
         ok <- FALSE
       }
 
+      if(is.null(input$startDate)) {
+        values$status <- status("You must provide a valid date.", "danger")
+      }
+
       if(is.na(as.POSIXct(input$startTime, format = "%I:%M %p"))) {
+        values$status <- status("Time not correctly formatted.", "danger")
         ok <- FALSE
       }
 
       return(ok)
+
     }
 
     clearForm <- function() {
@@ -246,6 +307,9 @@ crontabRAddin <- function() {
           warn=TRUE
         )) {
           values$cronjobs <- listCronjobs()
+          values$status <- status("Cronjob added!", "success")
+        } else {
+          values$status <- status("Unable to added cronjob!", "danger")
         }
       }
 
@@ -275,10 +339,18 @@ crontabRAddin <- function() {
             warn=TRUE
           )) {
             values$cronjobs <- listCronjobs()
+            values$status <- status("Cronjob updated.", "success")
           }
+        } else {
+          values$status <- status("You must check \"Overwrite Cronjob\" to update.", "warning")
         }
       }
 
+    })
+
+    observeEvent(values$logs, {
+      updateSelectInput(session, "logLevel", choices = c(unique(values$logs$level)))
+      updateSelectInput(session, "logJob", choices = c("all", unique(values$logs$job)))
     })
 
     observeEvent(input$deleteCronjob, {
@@ -287,23 +359,37 @@ crontabRAddin <- function() {
         deleteCronjob(input$currentJobs)
         clearForm()
         values$cronjobs <- listCronjobs()
+        values$status <- status("Cronjob deleted.", "success")
+      } else {
+        values$status <- status("You must check \"Overwrite Cronjob\" to delete.", "warning")
       }
 
     })
 
-    observeEvent(input$clearForm, {
+    observeEvent(input$clearAddForm, {
       clearForm()
     })
 
-    output$logs <- DT::renderDataTable({getLog()},
+    output$logs <- DT::renderDataTable({
+      log <- values$logs
+      if(!is.null(input$logLevel)) {
+        log <- log[log$level %in% input$logLevel, ]
+      }
+      if(input$logJob != "all") {
+        log <- log[log$job %in% input$logJob, ]
+      }
+      log
+    },
       selection = list(mode = 'single', selected = 1), server = FALSE, rownames = FALSE,
-      options = list(pageLength = 7, dom="tip")
+      options = list(pageLength = 9, dom="tp")
     )
 
     output$cronJobTable <- DT::renderDataTable({values$cronjobs[, -ncol(values$cronjobs)]},
       selection = list(mode = 'single', selected = 1), server = FALSE, rownames = FALSE,
       options = list(pageLength = 7, dom="tip")
     )
+
+    output$status <- renderText(values$status)
 
     observeEvent(input$done, {
       stopApp()
@@ -312,6 +398,7 @@ crontabRAddin <- function() {
   }
 
   viewer <- dialogViewer("crontabR", width = 800, height = 600)
+
 
   runGadget(ui, server, viewer = viewer)
 

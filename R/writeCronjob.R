@@ -1,4 +1,4 @@
-writeCronjob <- function(name, desc = NULL, env.vars, scheduled_time) {
+writeCronjob <- function(name, desc = NULL, env.vars, scheduled_time, bashrc) {
 
   name <- formatNames(name)
 
@@ -24,6 +24,10 @@ writeCronjob <- function(name, desc = NULL, env.vars, scheduled_time) {
   }
 
   cmd <- paste0("Rscript ", script_directory, name, ".R")
+
+  if(bashrc) {
+    cmd <- paste("source $HOME/.bashrc;", cmd)
+  }
 
   cronjob <- c(cronjob, paste0(scheduled_time, "\t", cmd))
 

@@ -25,7 +25,7 @@
 #'
 #'@export
 addCronjob <- function(name, desc = NULL, env_vars, scheduled_time, script_path,
-                       overwrite = FALSE, verbose = FALSE, warn = FALSE) {
+                       overwrite = FALSE, verbose = FALSE, warn = FALSE, bashrc = TRUE) {
 
   name <- formatNames(name, verbose)
   scheduled_time <- formatScheduledTime(scheduled_time)
@@ -42,9 +42,9 @@ addCronjob <- function(name, desc = NULL, env_vars, scheduled_time, script_path,
 
     if(cronjobExists(name)) deleteCronjob(name)
 
-    if(processScript(name, script_path, overwrite, warn = warn)) {
+    if(processScript(name, desc, script_path, overwrite, warn = warn)) {
 
-      cronjob <- writeCronjob(name, desc, env_vars, scheduled_time)
+      cronjob <- writeCronjob(name, desc, env_vars, scheduled_time, bashrc)
       crontab <- readCrontab()
       crontab <- c(crontab, cronjob)
       writeCrontab(crontab)

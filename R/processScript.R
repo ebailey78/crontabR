@@ -1,4 +1,4 @@
-processScript <- function(name, script_path, overwrite = FALSE, warn = FALSE, verbose = FALSE) {
+processScript <- function(name, desc, script_path, overwrite = FALSE, warn = FALSE, verbose = FALSE) {
 
   if(!file.exists(script_path)) {
     stop("Could not locate script: ", script_path)
@@ -20,19 +20,32 @@ processScript <- function(name, script_path, overwrite = FALSE, warn = FALSE, ve
       dir.create(script_directory)
     }
 
-    if(!file.copy(script_path, new_script_path, overwrite = TRUE) & verbose) {
-      err <- paste0("Unable to process and copy ", script_path)
-      if(warn) {
-        warning(err)
-        return(FALSE)
-      } else {
-        stop(err)
-      }
-    } else {
-      if(verbose) {
-        message(script_path, " processed and added to crontabR.")
-      }
-    }
+    script <- readLines(script_path)
+
+    header <- c(
+      paste("## crontabR Automation Script for", name),
+      "",
+      paste("##", desc),
+      "",
+      "library(crontabR)",
+      paste0("setCronjobValues('", name, "', '", desc, "')"),
+      "loadRenvirons()",
+      "cronLog(\"Script Started\")",
+      "",
+      "##### Do not edit above this line #####",
+      ""
+    )
+
+    footer <- c(
+      "",
+      "##### Do not edit below this line #####",
+      "",
+      "cronLog(\"Script Complete\")"
+    )
+
+    script <- c(header, script, footer)
+
+    writeLines(script, new_script_path)
 
     return(TRUE)
 
