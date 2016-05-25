@@ -32,6 +32,7 @@ processScript <- function(name, desc, script_path, overwrite = FALSE, warn = FAL
       "loadRenvirons()",
       "cronLog(\"Script Started\")",
       "",
+      "logErrors({",
       "##### Do not edit above this line #####",
       ""
     )
@@ -39,8 +40,10 @@ processScript <- function(name, desc, script_path, overwrite = FALSE, warn = FAL
     footer <- c(
       "",
       "##### Do not edit below this line #####",
+      "})",
       "",
-      "cronLog(\"Script Complete\")"
+      "cronLog(\"Script Complete\")",
+      "clearCronjobValues()"
     )
 
     script <- c(header, script, footer)

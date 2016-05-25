@@ -37,6 +37,8 @@ miniColumn <- function(width, ..., offset = 0) {
 #'@export
 crontabRAddin <- function() {
 
+  library(crontabR)
+
   ui <- miniPage(
     miniTabstripPanel(id = "whichTab",
       tabPanel("Create", icon = icon("magic"),
@@ -99,6 +101,7 @@ crontabRAddin <- function() {
       ),
       miniTabPanel("View", icon = icon("eye"),
         miniContentPanel(
+          actionButton("runJob", "Run Job Now"),
           DT::dataTableOutput("cronJobTable")
         )
       ),
@@ -159,6 +162,12 @@ crontabRAddin <- function() {
 
     })
 
+    observeEvent(input$runJob, {
+      source(paste0("~/.crontabR/",
+                   values$cronjobs$cronjob[input$cronJobTable_rows_selected],
+                   ".R"))
+    })
+
     observeEvent(input$frequency, {
       now <- Sys.time()
       freq <- input$frequency
@@ -182,10 +191,10 @@ crontabRAddin <- function() {
       switch(input$frequency,
 
         "Hourly" = {
-          dt[3:5] <- "*"
+          dt[2:5] <- "*"
         },
         "Daily" = {
-          dt[4:5] <- "*"
+          dt[3:5] <- "*"
         },
         "Weekly" = {
           dt[3:4] <- "*"
@@ -304,6 +313,7 @@ crontabRAddin <- function() {
           scheduled_time = cronString(),
           script_path = input$scriptUpload$datapath,
           overwrite = input$overwriteCronjob,
+          bashrc = input$sourceBashrc,
           warn=TRUE
         )) {
           values$cronjobs <- listCronjobs()

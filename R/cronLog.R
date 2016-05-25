@@ -27,3 +27,20 @@ cronLog <- function(msg, level = "info", app = getOption("crontabRjobValues")$na
   }
 
 }
+
+#'@export
+logErrors <- function(expr) {
+
+  x <- withCallingHandlers({expr},
+                             warning = function(w) {cronLog(w$message, "warn")},
+                             error = function(e) {cronLog(e$message, "error")},
+                             message = function(m) {cronLog(m$message, "verbose")}
+  )
+
+  if(length(x) > 0) {
+    cronLog(as.character(x), "info")
+  }
+
+  return(x)
+
+}

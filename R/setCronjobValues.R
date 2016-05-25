@@ -9,3 +9,10 @@ setCronjobValues <- function(name, desc) {
   options("crontabRjobValues" = v)
 
 }
+
+#'@export
+clearCronjobValues <- function() {
+
+  options("crontabRjobValues" = NULL)
+
+}
