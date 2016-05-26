@@ -29,7 +29,6 @@ processScript <- function(name, desc, script_path, overwrite = FALSE, warn = FAL
       "",
       "library(crontabR)",
       paste0("setCronjobValues('", name, "', '", desc, "')"),
-      "loadRenvirons()",
       "cronLog(\"Script Started\")",
       "",
       "logErrors({",

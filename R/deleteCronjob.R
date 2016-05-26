@@ -1,12 +1,8 @@
-#'Delete a Cronjob
-#'
-#'Delete a cronjob from your personal crontab
-#'
-#'@param name The unique name of the cronjob
+#'@rdname task_scheduling
 #'
 #'@details
 #'\code{deleteCronjob} will remove the lines in your crontab associated with the
-#'named cronjob. It will also delete the script from the \code{.automateR} directory.
+#'named cronjob. It will also delete the script from the \code{.crontabR} directory.
 #'
 #'@export
 deleteCronjob <- function(name) {

@@ -1,6 +1,7 @@
 #'List Loaded Cronjobs
 #'
-#'Read your personal crontab and return a list of jobs added by \code{automateR}.
+#'Read your personal crontab and return a data.frame of information about jobs
+#'added by \code{crontabR}.
 #'
 #'@export
 listCronjobs <- function() {

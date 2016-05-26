@@ -1,4 +1,3 @@
-#'@export
 readCronString <- function(cronString) {
 
   cronList <- strsplit(cronString, "\t| ")[[1]]

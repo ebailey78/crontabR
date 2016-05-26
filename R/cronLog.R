@@ -1,8 +1,18 @@
+#'Logging
+#'
 #'Log to the rAutomate Logging System
 #'
 #'@param msg The message to log
 #'@param level The loglevel to log to
+#'@param app The app to which to associate the log entry
 #'
+#'@details
+#'\code{crontabR} contains a logging system that will automatically log most errors
+#'and warnings to a log file saved in \code{~/.crontabR/logs/log}. In addition, you
+#'may use the \code{cronLog} function to log additional information to the log. The
+#'log can be one of six different levels; error, warn, info, verbose, debug, or silly.
+#'
+#'@rdname logging
 #'@export
 cronLog <- function(msg, level = "info", app = getOption("crontabRjobValues")$name) {
 
@@ -28,6 +38,18 @@ cronLog <- function(msg, level = "info", app = getOption("crontabRjobValues")$na
 
 }
 
+#'@rdname logging
+#'
+#'@param expr an expression to be evaluated with crontabR logging.
+#'
+#'@details
+#'\code{logErrors} isn't meant to be used by users. Each script that is automated
+#'with \code{crontabR} is wrapped in this function so that errors, warnings, and
+#'messages are automatically logged. Errors are logged at level \code{error},
+#'warnings are logged at level \code{warn}, and messages are logged at level
+#'\code{verbose}. In addition, any value the script returns will be logged at
+#'level \code{info}.
+#'
 #'@export
 logErrors <- function(expr) {
 

@@ -1,8 +1,8 @@
-#'Check if A Cronjob Exists
+#'@rdname task_scheduling
 #'
-#'Read your personal crontab and see if a crontab of the given name has been added by \code{automateR}.
-#'
-#'@param name The unique name of the cronjob you want to test
+#'@details
+#'\code{cronjobExists} reads your personal crontab to see if a cronjob of the
+#'given name has been added by \code{crontabR}.
 #'
 #'@export
 cronjobExists <- function(name) {
