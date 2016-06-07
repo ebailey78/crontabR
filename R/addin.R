@@ -68,11 +68,10 @@ crontabRAddin <- function() {
                      ),
                      miniColumn(width = 6,
                                 textInput("startTime", "Time", value = format(Sys.time(), "%I:%M %p"), placeholder = "HH:MM _M")
-                     )#,
-                     # tags$div(style = "text-align: center; width: 100%", "- OR -"),
-                     # miniColumn(width = 12,
-                     #   textInput("cronString", "Custom CronTab String", placeholder = "* * * *")
-                     # )
+                     ),
+                     miniColumn(width = 12,
+                                checkboxInput("minuteJiggle", "Jiggle")
+                     )
                ),
                panel(title = "Script Selection", style = "default",
                      fileInput("scriptUpload", label = NULL)
@@ -304,6 +303,17 @@ crontabRAddin <- function() {
           desc <- NULL
         } else {
           desc <- input$cronjobDesc
+        }
+
+        if(input$minuteJiggle) {
+
+          time <- as.POSIXct(paste(input$startDate, input$startTime), format = "%Y-%m-%d %I:%M %p")
+          j <- as.integer(runif(1, 1, 15)) * 60
+          time <- time + j
+
+          updateDateInput(session, "startDate", value = format(time, format = "%Y-%m-%d"))
+          updateTextInput(session, "startTime", value = format(time, format = "%I:%M %p"))
+
         }
 
         if(addCronjob(
