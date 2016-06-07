@@ -404,7 +404,11 @@ crontabRAddin <- function() {
       options = list(pageLength = 9, dom="tp")
     )
 
-    output$cronJobTable <- DT::renderDataTable({values$cronjobs[, -ncol(values$cronjobs)]},
+    output$cronJobTable <- DT::renderDataTable({
+        x <- values$cronjobs[, c("cronjob", "description", "interval", "nextRun")]
+        colnames(x) <- c("Name", "Description", "Interval", "Next Run")
+        return(x)
+      },
       selection = list(mode = 'single', selected = 1), server = FALSE, rownames = FALSE,
       options = list(pageLength = 7, dom="tip")
     )
