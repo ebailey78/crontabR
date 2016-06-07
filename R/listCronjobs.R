@@ -22,7 +22,7 @@ listCronjobs <- function() {
       cronString <- readCronString(strsplit(j[length(j) - 1], "source|Rscript")[[1]][1])
       interval <- cronString$interval
       nextRun <- format(cronString$nextRun, "%Y-%m-%d %I:%M%p")
-      bashrc <- grepl("source $HOME/.bashrc", j[length(j) - 1])
+      bashrc <- grepl("source $HOME/.bashrc", j[length(j) - 1], fixed = TRUE)
 
       ev <- j[!grepl("^#", j)]
       ev <- ev[-length(ev)]
