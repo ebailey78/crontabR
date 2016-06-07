@@ -100,29 +100,20 @@ crontabRAddin <- function() {
       ),
       miniTabPanel("View", icon = icon("eye"),
         miniContentPanel(
-          actionButton("runJob", "Run Job Now"),
-          DT::dataTableOutput("cronJobTable")
+          DT::dataTableOutput("cronJobTable"),
+          tags$div(style = "position: absolute; right: 5px; bottom: 5px;",
+            actionButton("runJob", "Run Selected Job", icon = icon("play"))
+          )
         )
       ),
       miniTabPanel("Logs", icon = icon("table"),
         miniContentPanel(
-          tags$div(class = "col-sm-4",
-            selectInput("logLevel", label = "Level", multiple = TRUE, choices = c())
-          ),
-          tags$div(class = "col-sm-4",
-            selectInput("logJob", label = "Job", choices = c())
-          ),
-          tags$div(class = "col-sm-4",
-            actionButton("updateLogs", "Update Logs")
-          ),
-          DT::dataTableOutput("logs")
+          DT::dataTableOutput("logs"),
+          tags$div(style = "position: absolute; right: 5px; bottom: 5px;",
+            actionButton("updateLogs", "Update Logs", icon = icon("refresh"))
+          )
         )
-      )#,
-      # miniTabPanel("Options", icon = icon("wrench"),
-      #   miniContentPanel(
-      #     "Test Options"
-      #   )
-      # )
+      )
     )
   )
 
@@ -154,11 +145,6 @@ crontabRAddin <- function() {
       ccj <- input$currentJobs
       if(!ccj %in% values$cronjobs$cronjob) ccj <- NULL
       updateSelectInput(session, "currentJobs", choices = c("", values$cronjobs$cronjob), selected = ccj)
-    })
-
-    observeEvent(input$whichTab, {
-      print(input$whichTab)
-
     })
 
     observeEvent(input$runJob, {
@@ -368,11 +354,6 @@ crontabRAddin <- function() {
 
     })
 
-    observeEvent(values$logs, {
-      updateSelectInput(session, "logLevel", choices = c(unique(values$logs$level)))
-      updateSelectInput(session, "logJob", choices = c("all", unique(values$logs$job)))
-    })
-
     observeEvent(input$deleteCronjob, {
 
       if(input$overwriteCronjob) {
@@ -392,25 +373,23 @@ crontabRAddin <- function() {
 
     output$logs <- DT::renderDataTable({
       log <- values$logs
-      if(!is.null(input$logLevel)) {
-        log <- log[log$level %in% input$logLevel, ]
-      }
-      if(input$logJob != "all") {
-        log <- log[log$job %in% input$logJob, ]
-      }
-      log
+      log$job <- ifelse(nchar(log$job) > 23, paste0(substring(log$job, 1, 20), "..."), log$job)
+      logs$date <- as.POSIXct(logs$date, format = "%Y-%m-%d %I:%M %p")
+      return(log)
     },
       selection = list(mode = 'single', selected = 1), server = FALSE, rownames = FALSE,
-      options = list(pageLength = 9, dom="tp")
+      options = list(pageLength = 5, dom="tip"), filter = "top"
     )
 
     output$cronJobTable <- DT::renderDataTable({
         x <- values$cronjobs[, c("cronjob", "description", "interval", "nextRun")]
+        x$cronjob <- ifelse(nchar(x$cronjob) > 23, paste0(substring(x$cronjob, 1, 20), "..."), x$cronjob)
+        x$description <- ifelse(nchar(x$description) > 50, paste0(substring(x$description, 1, 47), "..."), x$description)
         colnames(x) <- c("Name", "Description", "Interval", "Next Run")
         return(x)
       },
       selection = list(mode = 'single', selected = 1), server = FALSE, rownames = FALSE,
-      options = list(pageLength = 7, dom="tip")
+      options = list(pageLength = 5, dom="tip"), filter = "top"
     )
 
     output$status <- renderText(values$status)
