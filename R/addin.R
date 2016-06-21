@@ -374,7 +374,7 @@ crontabRAddin <- function() {
     output$logs <- DT::renderDataTable({
       log <- values$logs
       log$job <- ifelse(nchar(log$job) > 23, paste0(substring(log$job, 1, 20), "..."), log$job)
-      logs$date <- as.POSIXct(logs$date, format = "%Y-%m-%d %I:%M %p")
+      log$date <- as.POSIXct(log$date, format = "%Y-%m-%d %I:%M %p")
       return(log)
     },
       selection = list(mode = 'single', selected = 1), server = FALSE, rownames = FALSE,
