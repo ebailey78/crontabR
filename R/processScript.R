@@ -27,6 +27,7 @@ processScript <- function(name, desc, script_path, overwrite = FALSE, warn = FAL
       "",
       paste("##", desc),
       "",
+      "local({",
       "library(crontabR)",
       paste0("setCronjobValues('", name, "', '", desc, "')"),
       "cronLog(\"Script Started\")",
@@ -42,7 +43,8 @@ processScript <- function(name, desc, script_path, overwrite = FALSE, warn = FAL
       "})",
       "",
       "cronLog(\"Script Complete\")",
-      "clearCronjobValues()"
+      "clearCronjobValues()",
+      "})"
     )
 
     script <- c(header, script, footer)
