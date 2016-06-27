@@ -10,9 +10,24 @@
 #'@export
 getLog <- function(levels, jobs, start_date, end_date) {
 
-  if(file.exists(log_file)) {
+  if(missing(start_date)) {
+    start_date <- as.Date(format(Sys.Date(), "%Y-%m-01")) - months(2)
+  }
 
-    log <- read.table(log_file, header = FALSE, sep = "|", stringsAsFactors = FALSE)
+  if(missing(end_date)) {
+    end_date <- Sys.Date()
+  }
+
+  files <- paste0(script_directory, unique(format(seq(start_date, end_date, by = 1), "logs/log_%Y%m")))
+
+  log <- do.call(rbind, lapply(files, function(file) {
+      if(file.exists(file)) {
+        read.table(file, header = FALSE, sep = "|", stringsAsFactors = FALSE)
+      }
+  }))
+
+  if(!is.null(log)) {
+
     colnames(log) <- c("level", "job", "date", "message")
     log$date <- format(as.POSIXlt(log$date), dateTimeFormat)
 

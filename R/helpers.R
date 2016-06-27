@@ -1,5 +1,5 @@
 script_directory <- "~/.crontabR/"
-log_file <- paste0(script_directory, "logs/log")
+log_file <- paste0(script_directory, format(Sys.Date(), "log/log_%Y%m"))
 jobregex <- "##### crontabR: (.*) #####"
 dateTimeFormat <- "%Y-%m-%d %I:%M%p"
 
