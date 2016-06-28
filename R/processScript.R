@@ -35,7 +35,7 @@ processScript <- function(name, desc, script_path, logLevel = "info", overwrite 
       "",
       "local({",
       "library(crontabR)",
-      paste0("setCronjobValues('", name, "', '", desc, "', '", logLevel, "')"),
+      paste0("setCronjobValues('", name, "', '", gsub("'", "\\'", desc, fixed = TRUE), "', '", logLevel, "')"),
       "cronLog(\"Script Started\")",
       "",
       "logErrors({",
