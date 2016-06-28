@@ -22,6 +22,12 @@ processScript <- function(name, desc, script_path, logLevel = "info", overwrite 
 
     script <- readLines(script_path)
 
+    if(grepl("## crontabR Automation Script for", script[1])) {
+      script_start <- grep("##### Do not edit above this line #####", script)[1] + 1
+      script_end <- grep("##### Do not edit below this line #####", script)[1] - 1
+      script <- script[script_start:script_end]
+    }
+
     header <- c(
       paste("## crontabR Automation Script for", name),
       "",
@@ -33,12 +39,10 @@ processScript <- function(name, desc, script_path, logLevel = "info", overwrite 
       "cronLog(\"Script Started\")",
       "",
       "logErrors({",
-      "##### Do not edit above this line #####",
-      ""
+      "##### Do not edit above this line #####"
     )
 
     footer <- c(
-      "",
       "##### Do not edit below this line #####",
       "})",
       "",

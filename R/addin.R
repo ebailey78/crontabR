@@ -127,7 +127,7 @@ crontabRAddin <- function() {
 
     values <- reactiveValues(cronjobs = listCronjobs(),
                              status = status("Ready to Cron It Up!", "info"),
-                             logs = getLog())
+                             logs = getLog(), updateType = "none")
 
 ####### REACTIVES ########
 
@@ -258,8 +258,10 @@ crontabRAddin <- function() {
           ok <- FALSE
         }
       } else {
-        values$status <- status("You must include a script file.", "danger")
-        ok <- FALSE
+        if(values$updateType == "add") {
+          values$status <- status("You must include a script file.", "danger")
+          ok <- FALSE
+        }
       }
 
       if(is.null(input$cronjobName) | input$cronjobName == "") {
@@ -299,6 +301,7 @@ crontabRAddin <- function() {
     # Add Cronjob
     observeEvent(input$addCronjob, {
 
+      values$updateType <- "add"
 
       if(jobCheck()) {
 
@@ -325,6 +328,7 @@ crontabRAddin <- function() {
           values$status <- status("Unable to added cronjob!", "danger")
         }
       }
+      values$updateType <- "none"
 
 
     })
@@ -332,12 +336,24 @@ crontabRAddin <- function() {
     # Update Cronjob
     observeEvent(input$updateCronjob, {
 
+      values$updateType <- "update"
+
       if(jobCheck()) {
+
         if(input$overwriteCronjob) {
+
+          if(is.null(input$scriptUpload)) {
+            script_loc <- tempfile(fileext = ".R")
+            file.copy(paste0(script_directory, input$currentJobs, ".R"), script_loc)
+          } else {
+            script_loc <- input$scriptUpload$datapath
+          }
+
           deleteCronjob(input$currentJobs)
 
           if(input$cronjobDesc == "") {
             desc <- NULL
+
           } else {
             desc <- input$cronjobDesc
           }
@@ -347,7 +363,7 @@ crontabRAddin <- function() {
             desc = desc,
             env_vars = envVar(),
             scheduled_time = cronString(),
-            script_path = input$scriptUpload$datapath,
+            script_path = script_loc,
             overwrite = input$overwriteCronjob,
             warn=TRUE,
             logLevel = input$cronlogLevel
@@ -359,6 +375,7 @@ crontabRAddin <- function() {
           values$status <- status("You must check \"Overwrite Cronjob\" to update.", "warning")
         }
       }
+      values$updateType <- "none"
 
     })
 
