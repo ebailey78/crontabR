@@ -7,7 +7,8 @@
 \title{Task Scheduling}
 \usage{
 addCronjob(name, desc = NULL, env_vars, scheduled_time, script_path,
-  overwrite = FALSE, verbose = FALSE, warn = FALSE, bashrc = TRUE)
+  overwrite = FALSE, verbose = FALSE, warn = FALSE, bashrc = TRUE,
+  logLevel = "info")
 
 cronjobExists(name)
 
@@ -31,6 +32,8 @@ deleteCronjob(name)
 \item{warn}{Should errors stop the function or just give an warning?}
 
 \item{bashrc}{Should the user's .bashrc file be loaded before running the script?}
+
+\item{logLevel}{What is the minimum message level that should be logged?}
 }
 \description{
 Add/remove a cronjob to automate an R script to your personal crontab

@@ -11,11 +11,11 @@
 getLog <- function(levels, jobs, start_date, end_date) {
 
   if(missing(start_date)) {
-    start_date <- as.Date(format(Sys.Date(), "%Y-%m-01")) - months(2)
+    start_date <- as.Date(format(Sys.Date(), "%Y-%m-01")) - months(1)
   }
 
   if(missing(end_date)) {
-    end_date <- Sys.Date()
+    end_date <- Sys.Date() + 1
   }
 
   files <- paste0(script_directory, unique(format(seq(start_date, end_date, by = 1), "logs/log_%Y%m")))

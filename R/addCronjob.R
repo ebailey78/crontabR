@@ -13,6 +13,7 @@
 #'@param verbose Should extra messages be displayed while the cronjob is being built?
 #'@param warn Should errors stop the function or just give an warning?
 #'@param bashrc Should the user's .bashrc file be loaded before running the script?
+#'@param logLevel What is the minimum message level that should be logged?
 #'
 #'@details
 #'\code{cron} does not start a shell and therefore doesn't load environment variables that would normally get loaded. Use
@@ -31,7 +32,8 @@
 #'
 #'@export
 addCronjob <- function(name, desc = NULL, env_vars, scheduled_time, script_path,
-                       overwrite = FALSE, verbose = FALSE, warn = FALSE, bashrc = TRUE) {
+                       overwrite = FALSE, verbose = FALSE, warn = FALSE, bashrc = TRUE,
+                       logLevel = "info") {
 
   name <- formatNames(name, verbose)
   scheduled_time <- formatScheduledTime(scheduled_time)
@@ -48,9 +50,9 @@ addCronjob <- function(name, desc = NULL, env_vars, scheduled_time, script_path,
 
     if(cronjobExists(name)) deleteCronjob(name)
 
-    if(processScript(name, desc, script_path, overwrite, warn = warn)) {
+    if(processScript(name, desc, script_path, overwrite, warn = warn, logLevel = logLevel)) {
 
-      cronjob <- writeCronjob(name, desc, env_vars, scheduled_time, bashrc)
+      cronjob <- writeCronjob(name, desc, env_vars, scheduled_time, bashrc, logLevel)
       crontab <- readCrontab()
       crontab <- c(crontab, cronjob)
       writeCrontab(crontab)

@@ -28,7 +28,8 @@ formatScheduledTime <- function(scheduled_time) {
   if(is.list(scheduled_time)) {
 
     time_labels <- c("minute", "hour", "day_of_month", "month", "day_of_week")
-    mon <- list(Jan = 1, Feb = 2, Mar = 3, Apr = 4, May = 5, Jun = 6, Jul = 7, Aug = 8, Sep = 9, Oct = 10, Nov = 11, Dec = 12)
+    mon <- list(Jan = 1, Feb = 2, Mar = 3, Apr = 4, May = 5, Jun = 6, Jul = 7,
+                Aug = 8, Sep = 9, Oct = 10, Nov = 11, Dec = 12)
     day <- list(Sun = 0, Mon = 1, Tue = 2, Wed = 3, Thu = 4, Fri = 5, Sat = 6)
 
     if(!is.null(scheduled_time$month)) {

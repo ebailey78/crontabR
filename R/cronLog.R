@@ -18,16 +18,23 @@ cronLog <- function(msg, level = "info", app = getOption("crontabRjobValues")$na
 
   if(is.null(app)) app = "crontabR"
 
+  ll <- getOption("crontabRjobValues")$logLevel
+  if(is.null(ll)) ll <- "info"
+
   levels <- c(error = 0, warn = 1, info = 2, verbose = 3, debug = 4, silly = 5)
 
   if(level %in% names(levels)) {
 
-    if(!dir.exists(dirname(log_file))) dir.create(dirname(log_file), recursive = TRUE)
+    if(levels[level] <= levels[ll]) {
 
-    msg <- gsub("|", ".", msg, fixed = TRUE)
-    rec <- list(level, app, Sys.time(), msg)
+      if(!dir.exists(dirname(log_file))) dir.create(dirname(log_file), recursive = TRUE)
 
-    write.table(rec, log_file, append = TRUE, sep = "|", row.names = FALSE, col.names = FALSE)
+      msg <- gsub("|", ".", msg, fixed = TRUE)
+      rec <- list(level, app, Sys.time(), msg)
+
+      write.table(rec, log_file, append = TRUE, sep = "|", row.names = FALSE, col.names = FALSE)
+
+    }
 
   } else {
 

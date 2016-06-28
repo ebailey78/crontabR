@@ -48,8 +48,11 @@ crontabRAddin <- function() {
           ),
           panel(title = "Options", style = "default",
             textInput("cronjobName", label = "Cronjob Name", width = "100%"),
+            selectInput("cronlogLevel", label = "Logging Level", width = "100%",
+                        choices = c("error", "warn", "info", "verbose", "debug", "silly"),
+                        selected = "info"),
             textAreaInput("cronjobDesc", rows = "2", "Cronjob Description"),
-            textAreaInput("environmentVariables", "Environment Variables"),
+            textAreaInput("environmentVariables", rows = "2", "Environment Variables"),
             tags$div(class = "col-sm-6",
               checkboxInput("overwriteCronjob", "Overwrite Cronjob", value = FALSE)
             ),
@@ -59,6 +62,7 @@ crontabRAddin <- function() {
           )
         ),
         column(width = 5,
+               htmlOutput("status"),
                panel(title = "Scheduler", style = "default",
                      miniColumn(width = 12,
                                 selectInput("frequency", label = NULL, choices = c("Hourly", "Daily", "Weekly", "Monthly", "Yearly"), selected = "Weekly")
@@ -76,26 +80,18 @@ crontabRAddin <- function() {
                panel(title = "Script Selection", style = "default",
                      fileInput("scriptUpload", label = NULL)
                ),
-               tags$div(class = "btn-group btn-group-justified", role = "group",
-                tags$div(class = "btn-group",
-                  tags$button(id = "addCronjob", class = "btn btn-success action-button", icon("plus"), "Add")
-                ),
-                tags$div(class = "btn-group",
-                 tags$button(id = "updateCronjob", class = "btn btn-warning action-button", icon("pencil"), "Update")
-                )
+               column(width = 6, style = "padding-left: 0; padding-right: 5px;",
+                 tags$button(id = "addCronjob", class = "btn btn-success action-button btn-block", icon("plus"), "Add")
                ),
-               tags$div(class = "btn-group btn-group-justified", style = "margin-top: 5px;",
-                tags$div(class = "btn-group",
-                 tags$button(id = "deleteCronjob", class = "btn btn-danger action-button", icon("minus"), "Delete")
-                ),
-                tags$div(class = "btn-group",
-                 tags$button(id = "clearAddForm", class = "btn btn-info action-button", icon("ban"), "Clear")
-                )
+               column(width = 6, style = "padding-left: 5px; padding-right: 0;",
+                 tags$button(id = "updateCronjob", class = "btn btn-warning action-button btn-block", icon("pencil"), "Update")
                ),
-               htmlOutput("status")
-
-
-
+               column(width = 6, style = "padding-left: 0; padding-right: 5px; padding-top: 10px;",
+                 tags$button(id = "deleteCronjob", class = "btn btn-danger action-button btn-block", icon("minus"), "Delete")
+               ),
+               column(width = 6, style = "padding-left: 5px; padding-right: 0; padding-top: 10px;",
+                 tags$button(id = "clearAddForm", class = "btn btn-info action-button btn-block", icon("ban"), "Clear")
+               )
         )
       ),
       miniTabPanel("View", icon = icon("eye"),
@@ -114,7 +110,17 @@ crontabRAddin <- function() {
           )
         )
       )
-    )
+    ),
+    tags$script('
+      Shiny.addCustomMessageHandler("resetFileInputHandler", function(x) {
+          var id = "#" + x;
+          var pb_id = "#" + x + "_progress";
+          var idBar = pb_id + " .bar";
+          $(id).val("");
+          $(pb_id).css("visibility", "hidden");
+          $(idBar).css("width", "0%");
+      });
+    ')
   )
 
   server <- function(input, output, session) {
@@ -127,15 +133,19 @@ crontabRAddin <- function() {
 
     datetime <- reactive({
 
-      d <- as.POSIXlt(input$startDate)
-      t <- as.POSIXlt(input$startTime, format = "%I:%M %p")
+      time <- as.POSIXct(paste(input$startDate, input$startTime), format = "%Y-%m-%d %I:%M %p")
+
+      if(input$minuteJiggle) {
+        j <- as.integer(runif(1, 1, 15)) * 60
+        time <- time + j
+      }
 
       dt <- list(
-        M = as.integer(format(t, "%M")),
-        H = as.integer(format(t, "%H")),
-        d = as.integer(format(d, "%d")),
-        m = as.integer(format(d, "%m")),
-        W = as.integer(as.POSIXlt(d)$wday)
+        M = as.integer(format(time, "%M")),
+        H = as.integer(format(time, "%H")),
+        d = as.integer(format(time, "%d")),
+        m = as.integer(format(time, "%m")),
+        W = as.integer(as.POSIXlt(time)$wday)
       )
 
     })
@@ -224,12 +234,18 @@ crontabRAddin <- function() {
 
         updateTextInput(session, "cronjobName", value = cj$cronjob)
         updateTextInput(session, "cronjobDesc", value = cj$desc)
+        updateSelectInput(session, "cronlogLevel", selected = cj$logLevel)
         updateTextInput(session, "environmentVariables", value = cj$envvar)
 
         updateDateInput(session, "startDate", value = as.Date(cj$nextRun))
         updateTextInput(session, "startTime", value = format(as.POSIXct(cj$nextRun, format = dateTimeFormat), format = "%I:%M %p"))
 
         updateSelectInput(session, "frequency", selected = cj$interval)
+
+        updateCheckboxInput(session, "minuteJiggle", value = FALSE)
+
+        session$sendCustomMessage(type = "resetFileInputHandler", "scriptUpload")
+        values$status <- status("Ready to Cron It Up!", "info")
       }
 
     })
@@ -276,6 +292,7 @@ crontabRAddin <- function() {
       updateTextInput(session, "startTime", value = format(Sys.time(), "%I:%M %p"))
 
       updateSelectInput(session, "frequency", selected = "Weekly")
+      session$sendCustomMessage(type = "resetFileInputHandler", "scriptUpload")
 
     }
 
@@ -291,17 +308,6 @@ crontabRAddin <- function() {
           desc <- input$cronjobDesc
         }
 
-        if(input$minuteJiggle) {
-
-          time <- as.POSIXct(paste(input$startDate, input$startTime), format = "%Y-%m-%d %I:%M %p")
-          j <- as.integer(runif(1, 1, 15)) * 60
-          time <- time + j
-
-          updateDateInput(session, "startDate", value = format(time, format = "%Y-%m-%d"))
-          updateTextInput(session, "startTime", value = format(time, format = "%I:%M %p"))
-
-        }
-
         if(addCronjob(
           name = input$cronjobName,
           desc = desc,
@@ -310,7 +316,8 @@ crontabRAddin <- function() {
           script_path = input$scriptUpload$datapath,
           overwrite = input$overwriteCronjob,
           bashrc = input$sourceBashrc,
-          warn=TRUE
+          warn=TRUE,
+          logLevel = input$cronlogLevel
         )) {
           values$cronjobs <- listCronjobs()
           values$status <- status("Cronjob added!", "success")
@@ -342,7 +349,8 @@ crontabRAddin <- function() {
             scheduled_time = cronString(),
             script_path = input$scriptUpload$datapath,
             overwrite = input$overwriteCronjob,
-            warn=TRUE
+            warn=TRUE,
+            logLevel = input$cronlogLevel
           )) {
             values$cronjobs <- listCronjobs()
             values$status <- status("Cronjob updated.", "success")
@@ -369,6 +377,7 @@ crontabRAddin <- function() {
 
     observeEvent(input$clearAddForm, {
       clearForm()
+      values$status <- status("Ready to Cron It Up!", "info")
     })
 
     output$logs <- DT::renderDataTable({
@@ -382,10 +391,11 @@ crontabRAddin <- function() {
     )
 
     output$cronJobTable <- DT::renderDataTable({
-        x <- values$cronjobs[, c("cronjob", "description", "interval", "nextRun")]
+        x <- values$cronjobs[, c("cronjob", "description", "interval", "nextRun", "logLevel")]
         x$cronjob <- ifelse(nchar(x$cronjob) > 23, paste0(substring(x$cronjob, 1, 20), "..."), x$cronjob)
         x$description <- ifelse(nchar(x$description) > 50, paste0(substring(x$description, 1, 47), "..."), x$description)
-        colnames(x) <- c("Name", "Description", "Interval", "Next Run")
+        colnames(x) <- c("Name", "Description", "Interval", "Next Run", "Log Level")
+        x <- x[order(x$Name), ]
         return(x)
       },
       selection = list(mode = 'single', selected = 1), server = FALSE, rownames = FALSE,
@@ -400,7 +410,7 @@ crontabRAddin <- function() {
 
   }
 
-  viewer <- dialogViewer("crontabR", width = 800, height = 600)
+  viewer <- dialogViewer("crontabR", width = 800, height = 650)
 
 
   runGadget(ui, server, viewer = viewer)

@@ -1,4 +1,4 @@
-processScript <- function(name, desc, script_path, overwrite = FALSE, warn = FALSE, verbose = FALSE) {
+processScript <- function(name, desc, script_path, logLevel = "info", overwrite = FALSE, warn = FALSE, verbose = FALSE) {
 
   if(!file.exists(script_path)) {
     stop("Could not locate script: ", script_path)
@@ -29,7 +29,7 @@ processScript <- function(name, desc, script_path, overwrite = FALSE, warn = FAL
       "",
       "local({",
       "library(crontabR)",
-      paste0("setCronjobValues('", name, "', '", desc, "')"),
+      paste0("setCronjobValues('", name, "', '", desc, "', '", logLevel, "')"),
       "cronLog(\"Script Started\")",
       "",
       "logErrors({",

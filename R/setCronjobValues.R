@@ -9,11 +9,12 @@
 #'to assign the correct name to the log entries. There shouldn't be any need for
 #'a user to use these functions.
 #'@export
-setCronjobValues <- function(name, desc) {
+setCronjobValues <- function(name, desc, logLevel = "info") {
 
   v <- list(
     name = name,
-    description = desc
+    description = desc,
+    logLevel = logLevel
   )
 
   options("crontabRjobValues" = v)
