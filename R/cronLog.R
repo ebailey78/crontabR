@@ -61,13 +61,16 @@ cronLog <- function(msg, level = "info", app = getOption("crontabRjobValues")$na
 logErrors <- function(expr) {
 
   x <- withCallingHandlers({expr},
-                             warning = function(w) {cronLog(w$message, "warn")},
+                             warning = function(w) {
+                               cronLog(w$message, "warn")
+                             },
                              error = function(e) {cronLog(e$message, "error")},
                              message = function(m) {cronLog(m$message, "verbose")}
   )
 
   if(length(x) > 0) {
-    cronLog(as.character(x), "info")
+    x <- try(as.character(x))
+    if(!"try-error" %in% class(x)) cronLog(as.character(x), "info")
   }
 
   return(x)

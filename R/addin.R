@@ -153,9 +153,19 @@ crontabRAddin <- function() {
     })
 
     observeEvent(input$runJob, {
-      source(paste0("~/.crontabR/",
-                   values$cronjobs$cronjob[input$cronJobTable_rows_selected],
-                   ".R"))
+
+      i = input$cronJobTable_rows_selected
+
+      cmd <- ""
+
+      if(values$cronjobs$bashrc[i] == "TRUE") {
+        cmd <- "source $HOME/.bashrc; "
+      }
+
+      cmd <- paste0(cmd, "Rscript ~/.crontabR/", values$cronjobs$cronjob[i], ".R")
+
+      system(cmd, wait = FALSE)
+
     })
 
     observeEvent(input$frequency, {
