@@ -103,12 +103,7 @@ crontabRAddin <- function() {
         )
       ),
       miniTabPanel("Logs", icon = icon("table"),
-        miniContentPanel(
-          DT::dataTableOutput("logs"),
-          tags$div(style = "position: absolute; right: 5px; bottom: 5px;",
-            actionButton("updateLogs", "Update Logs", icon = icon("refresh"))
-          )
-        )
+        logsUI("logTab")
       )
     ),
     tags$script('
@@ -127,7 +122,7 @@ crontabRAddin <- function() {
 
     values <- reactiveValues(cronjobs = listCronjobs(),
                              status = status("Ready to Cron It Up!", "info"),
-                             logs = getLog(), updateType = "none")
+                             updateType = "none")
 
 ####### REACTIVES ########
 
@@ -223,8 +218,6 @@ crontabRAddin <- function() {
     observeEvent(input$cronjobName, {
       updateTextInput(session, "cronjobName", value = formatNames(input$cronjobName))
     })
-
-    observeEvent(input$updateLogs, {values$logs <- getLog()})
 
     # Populate cronjob info
     observeEvent(input$currentJobs, {
@@ -397,15 +390,7 @@ crontabRAddin <- function() {
       values$status <- status("Ready to Cron It Up!", "info")
     })
 
-    output$logs <- DT::renderDataTable({
-      log <- values$logs
-      log$job <- ifelse(nchar(log$job) > 23, paste0(substring(log$job, 1, 20), "..."), log$job)
-      log$date <- as.POSIXct(log$date, format = "%Y-%m-%d %I:%M %p")
-      return(log)
-    },
-      selection = list(mode = 'single', selected = 1), server = FALSE, rownames = FALSE,
-      options = list(pageLength = 5, dom="tip"), filter = "top"
-    )
+    callModule(logs, "logTab")
 
     output$cronJobTable <- DT::renderDataTable({
         x <- values$cronjobs[, c("cronjob", "description", "interval", "nextRun", "logLevel")]
