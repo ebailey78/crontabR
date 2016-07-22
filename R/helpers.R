@@ -1,5 +1,9 @@
 script_directory <- "~/.crontabR/"
+alert_options_file <- paste0(script_directory, "alert_options.rda")
 log_file <- paste0(script_directory, format(Sys.Date(), "logs/log_%Y%m"))
+if(!file.exists(log_file)) {
+  file.create(log_file)
+}
 jobregex <- "##### crontabR: (.*) #####"
 dateTimeFormat <- "%Y-%m-%d %I:%M%p"
 

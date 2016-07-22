@@ -22,7 +22,12 @@ getLog <- function(levels, jobs, start_date, end_date) {
 
   log <- do.call(rbind, lapply(files, function(file) {
       if(file.exists(file)) {
-        read.table(file, header = FALSE, sep = "|", stringsAsFactors = FALSE)
+        x <- try(read.table(file, header = FALSE, sep = "|", stringsAsFactors = FALSE), silent = TRUE)
+        if("try-error" %in% class(x)) {
+          return(NULL)
+        } else {
+          return(x)
+        }
       }
   }))
 

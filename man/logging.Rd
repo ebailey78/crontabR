@@ -13,7 +13,7 @@ logErrors(expr)
 
 getLog(levels, jobs, start_date, end_date)
 
-setCronjobValues(name, desc, logLevel = "info")
+setCronjobValues(name, desc, logLevel = "info", textLevel = "none")
 }
 \arguments{
 \item{msg}{The message to log}

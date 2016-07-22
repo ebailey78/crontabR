@@ -1,4 +1,4 @@
-writeCronjob <- function(name, desc = NULL, env.vars, scheduled_time, bashrc, logLevel) {
+writeCronjob <- function(name, desc = NULL, env.vars, scheduled_time, bashrc, logLevel, textLevel) {
 
   name <- formatNames(name)
 
@@ -11,6 +11,7 @@ writeCronjob <- function(name, desc = NULL, env.vars, scheduled_time, bashrc, lo
   }
 
   cronjob <- c(cronjob, paste0("#|#logLevel: ", logLevel))
+  cronjob <- c(cronjob, paste0("#|#textLevel: ", textLevel))
 
   if(!missing(env.vars)) {
     if(length(env.vars) > 0) {

@@ -14,4 +14,6 @@ Depends:
     miniUI,
     DT,
     lubridate
+Suggests:
+    mailR
 RoxygenNote: 5.0.1

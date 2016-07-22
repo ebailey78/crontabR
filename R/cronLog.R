@@ -19,9 +19,12 @@ cronLog <- function(msg, level = "info", app = getOption("crontabRjobValues")$na
   if(is.null(app)) app = "crontabR"
 
   ll <- getOption("crontabRjobValues")$logLevel
-  if(is.null(ll)) ll <- "info"
+  tl <- getOption("crontabRjobValues")$textLevel
 
-  levels <- c(error = 0, warn = 1, info = 2, verbose = 3, debug = 4, silly = 5)
+  if(is.null(ll)) ll <- "info"
+  if(is.null(tl)) tl <- "none"
+
+  levels <- c(none = -1, error = 0, warn = 1, info = 2, verbose = 3, debug = 4, silly = 5)
 
   if(level %in% names(levels)) {
 
@@ -35,6 +38,14 @@ cronLog <- function(msg, level = "info", app = getOption("crontabRjobValues")$na
       write.table(rec, log_file, append = TRUE, sep = "|", row.names = FALSE, col.names = FALSE)
 
     }
+
+    if(levels[level] <= levels[tl]) {
+
+      sendCrontabAlert("crontabR Alert", paste0(app, " - ", level, ": ", msg))
+
+    }
+
+
 
   } else {
 
@@ -64,8 +75,12 @@ logErrors <- function(expr) {
                              warning = function(w) {
                                cronLog(w$message, "warn")
                              },
-                             error = function(e) {cronLog(e$message, "error")},
-                             message = function(m) {cronLog(m$message, "verbose")}
+                             error = function(e) {
+                               cronLog(e$message, "error")
+                             },
+                             message = function(m) {
+                               cronLog(m$message, "verbose")
+                             }
   )
 
   if(length(x) > 0) {

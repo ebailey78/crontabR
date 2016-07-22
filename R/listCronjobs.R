@@ -24,6 +24,9 @@ listCronjobs <- function() {
       ll <- j[grep("^#\\|#logLevel", j)]
       logLevel <- try(regmatches(ll, regexec("^#\\|#logLevel: (.+)", ll))[[1]][2], silent = TRUE)
       if("try-error" %in% class(logLevel)) logLevel <- "info"
+      tl <- j[grep("^#\\|#textLevel", j)]
+      textLevel <- try(regmatches(tl, regexec("^#\\|#textLevel: (.+)", tl))[[1]][2], silent = TRUE)
+      if("try-error" %in% class(textLevel)) textLevel <- "none"
       cronString <- readCronString(strsplit(j[length(j) - 1], "source|Rscript")[[1]][1])
       interval <- cronString$interval
       nextRun <- format(cronString$nextRun, "%Y-%m-%d %I:%M%p")
@@ -33,11 +36,11 @@ listCronjobs <- function() {
       ev <- ev[-length(ev)]
       ev <- paste(ev, collapse = "\n")
 
-      c(name, desc, interval, nextRun, ev, bashrc, logLevel)
+      c(name, desc, interval, nextRun, ev, bashrc, logLevel, textLevel)
 
     })), stringsAsFactors = FALSE)
 
-    colnames(y) <- c("cronjob", "description", "interval", "nextRun", "envvar", "bashrc", "logLevel")
+    colnames(y) <- c("cronjob", "description", "interval", "nextRun", "envvar", "bashrc", "logLevel", "textLevel")
 
     y <- y[order(y$cronjob), ]
 
