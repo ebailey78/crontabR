@@ -10,7 +10,7 @@ optionsOutput <- function(id) {
     if(to[2] %in% carriers) {
       crontab_alert_options$type = "text"
       crontab_alert_options$phone_number = to[1]
-      crontab_alert_options$carrier = names(carriers)[carriers == to[2]][1]
+      crontab_alert_options$carrier = to[2]
     } else {
       crontab_alert_options$type = "email"
       crontab_alert_options$email = crontab_alert_options$to

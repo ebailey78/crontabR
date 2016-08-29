@@ -1,7 +1,7 @@
 #'@export
 crontabRAddin <- function() {
 
-  library(crontabR)
+  suppressPackageStartupMessages(library(crontabR))
 
   ui <- miniPage(
     miniTabstripPanel(id = "whichTab",
@@ -25,6 +25,6 @@ crontabRAddin <- function() {
   viewer <- dialogViewer("crontabR", width = 864, height = 648)
 
 
-  runGadget(ui, server, viewer = viewer)
+  suppressMessages(runGadget(ui, server, viewer = viewer))
 
 }
