@@ -3,7 +3,7 @@ optionsOutput <- function(id) {
 
   load(paste0(script_directory, "alert_options.rda"))
 
-  to <- try(strsplit(crontab_alert_options$to, "@", fixed = TRUE)[[1]])
+  to <- try(strsplit(crontab_alert_options$to, "@", fixed = TRUE)[[1]], silent = TRUE)
 
   if(length(to) == 2) {
 
