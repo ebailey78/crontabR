@@ -8,6 +8,7 @@ dateTimeFormat <- "%Y-%m-%d %I:%M%p"
 
   if(!dir.exists(script_directory)) {
     dir.create(script_directory)
+    dir.create(paste0(script_directory, "/logs"))
     setCrontabAlertOptions()
   }
 
