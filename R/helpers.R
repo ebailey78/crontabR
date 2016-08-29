@@ -1,6 +1,7 @@
 script_directory <- "~/.crontabR/"
 if(!dir.exists(script_directory)) {
   dir.create(script_directory)
+  setCrontabAlertOptions()
 }
 
 alert_options_file <- paste0(script_directory, "alert_options.rda")
