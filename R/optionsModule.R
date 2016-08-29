@@ -11,7 +11,6 @@ optionsOutput <- function(id) {
       crontab_alert_options$type = "text"
       crontab_alert_options$phone_number = to[1]
       crontab_alert_options$carrier = names(carriers)[carriers == to[2]][1]
-      print(crontab_alert_options$carrier)
     } else {
       crontab_alert_options$type = "email"
       crontab_alert_options$email = crontab_alert_options$to
@@ -66,17 +65,14 @@ optionsOutput <- function(id) {
 optionsServer <- function(input, output, session) {
 
   observeEvent(input$update, {
-    print(input$update)
+
     if(input$update > 0) {
-      print(input$carrier)
 
       if(input$type == "text") {
         to <- paste0(input$phone_number, "@", input$carrier)
       } else {
         to <- input$email_address
       }
-
-      print(to)
 
       setCrontabAlertOptions(
         from = input$from,
