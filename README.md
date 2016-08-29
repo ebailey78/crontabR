@@ -9,3 +9,7 @@ I have a lot of recurring reports and data processing that I need on a daily, we
 I've written documentation for all the functions now and cleaned up the underlying code a lot. I'm currently using `crontabR` to automate about half a dozen tasks at work now and everything seems to be working well. You can use the functions to set tasks but I recommend using the RStudio addin that I've created to accompany the package. It makes working with the package much easier in my opinion.
 
 `crontabR` is still experimental and I'm going to continue to add features and fix bugs as I find them/think of them. Please let me know if you use the package and what you think of it.
+
+## Update - 2016-07-22
+
+Added the ability to have crontabR automatically email or text you with messages as part of the logging process.
