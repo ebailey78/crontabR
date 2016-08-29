@@ -1,19 +1,21 @@
 script_directory <- "~/.crontabR/"
-if(!dir.exists(script_directory)) {
-  dir.create(script_directory)
-  setCrontabAlertOptions()
-}
-
 alert_options_file <- paste0(script_directory, "alert_options.rda")
-
 log_file <- paste0(script_directory, format(Sys.Date(), "logs/log_%Y%m"))
-
-if(!file.exists(log_file)) {
-  file.create(log_file)
-}
-
 jobregex <- "##### crontabR: (.*) #####"
 dateTimeFormat <- "%Y-%m-%d %I:%M%p"
+
+.onLoad <- function() {
+
+  if(!dir.exists(script_directory)) {
+    dir.create(script_directory)
+    setCrontabAlertOptions()
+  }
+
+  if(!file.exists(log_file)) {
+    file.create(log_file)
+  }
+
+}
 
 makeTag <- function(name) {
 
