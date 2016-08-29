@@ -4,7 +4,7 @@ log_file <- paste0(script_directory, format(Sys.Date(), "logs/log_%Y%m"))
 jobregex <- "##### crontabR: (.*) #####"
 dateTimeFormat <- "%Y-%m-%d %I:%M%p"
 
-.onLoad <- function() {
+.onLoad <- function(libname, pkgname) {
 
   if(!dir.exists(script_directory)) {
     dir.create(script_directory)
