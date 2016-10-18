@@ -30,12 +30,12 @@ cronLog <- function(msg, level = "info", app = getOption("crontabRjobValues")$na
 
     if(levels[level] <= levels[ll]) {
 
-      if(!dir.exists(dirname(log_file))) dir.create(dirname(log_file), recursive = TRUE)
+      if(!dir.exists(dirname(log_file()))) dir.create(dirname(log_file()), recursive = TRUE)
 
       msg <- gsub("|", ".", msg, fixed = TRUE)
       rec <- list(level, app, Sys.time(), msg)
 
-      write.table(rec, log_file, append = TRUE, sep = "|", row.names = FALSE, col.names = FALSE)
+      write.table(rec, log_file(), append = TRUE, sep = "|", row.names = FALSE, col.names = FALSE)
 
     }
 
