@@ -2,8 +2,8 @@
 % Please edit documentation in R/cronLog.R, R/getLog.R, R/setCronjobValues.R
 \name{cronLog}
 \alias{cronLog}
-\alias{getLog}
 \alias{logErrors}
+\alias{getLog}
 \alias{setCronjobValues}
 \title{Logging}
 \usage{
@@ -59,4 +59,3 @@ to scripts processed by \code{crontabR} so that the loggin system will be able
 to assign the correct name to the log entries. There shouldn't be any need for
 a user to use these functions.
 }
-

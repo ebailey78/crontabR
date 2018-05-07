@@ -10,4 +10,3 @@ listCronjobs()
 Read your personal crontab and return a data.frame of information about jobs
 added by \code{crontabR}.
 }
-

@@ -1,7 +1,8 @@
 Package: crontabR
 Type: Package
 Title: Easy Script Scheduling in R for Linux
-Version: 0.2.2
+Version: 0.2.3
+Date: 2018-05-07
 Author: Eric Bailey
 Maintainer: Eric Bailey <eb11307@gmail.com>
 Description: Provides an interface to your personal crontab in R. Set R scripts
@@ -16,4 +17,4 @@ Depends:
     lubridate
 Suggests:
     mailR
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
