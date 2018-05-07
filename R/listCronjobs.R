@@ -19,7 +19,7 @@ listCronjobs <- function() {
 
       name <- regmatches(j[1], regexec(jobregex, j[1]))[[1]][2]
       desc <- j[grep("^#\\|#", j)]
-      desc <- desc[!grepl("^#\\|#logLevel:", desc)]
+      desc <- desc[!grepl("^#\\|#logLevel:|#textLevel:", desc)]
       desc <- paste(collapse = " ", gsub("^#\\|#", "", desc))
       ll <- j[grep("^#\\|#logLevel", j)]
       logLevel <- try(regmatches(ll, regexec("^#\\|#logLevel: (.+)", ll))[[1]][2], silent = TRUE)

@@ -9,7 +9,7 @@
 #'\code{getLog} reads and optionally filters the \code{crontabR} log.
 #'@export
 getLog <- function(levels, jobs, start_date, end_date) {
-
+  library(lubridate)
   if(missing(start_date)) {
     start_date <- as.Date(format(Sys.Date(), "%Y-%m-01")) - months(1)
   }
@@ -24,6 +24,15 @@ getLog <- function(levels, jobs, start_date, end_date) {
       if(file.exists(file)) {
         x <- try(read.table(file, header = FALSE, sep = "|", stringsAsFactors = FALSE), silent = TRUE)
         if("try-error" %in% class(x)) {
+          x <- readLines(file)
+          x <- gsub("\"", "", x)
+          y <- strsplit(x, split = "|", fixed = TRUE)
+          cn <- y[[1]]
+          y <- y[2:length(y)]
+          z <- sapply(y, length)
+          y <- y[z == 4]
+          z <- as.data.frame(do.call(rbind, y), stringsAsFactors = FALSE)
+          colnames(z) <- cn
           return(NULL)
         } else {
           return(x)
